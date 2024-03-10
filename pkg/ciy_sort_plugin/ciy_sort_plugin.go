@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	Name                         = "NodeResourceTopologyMatch"
 	clusterNodeDurationInMinutes = 10
 	responseTimeoutInSecond      = 2
 	ciyWeight                    = 0.6
@@ -44,7 +45,7 @@ func NewCiySortPlugin() *CiySortPlugin {
 }
 
 func (ciy *CiySortPlugin) Name() string {
-	return "CiySortPlugin"
+	return Name
 }
 func New(obj runtime.Object, h framework.Handle) (framework.Plugin, error) {
 	return NewCiySortPlugin(), nil
