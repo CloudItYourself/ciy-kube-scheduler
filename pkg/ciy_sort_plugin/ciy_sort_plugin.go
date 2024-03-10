@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	Name                         = "NodeResourceTopologyMatch"
+	Name                         = "CiySortPlugin"
 	clusterNodeDurationInMinutes = 10
 	responseTimeoutInSecond      = 2
 	ciyWeight                    = 0.6
