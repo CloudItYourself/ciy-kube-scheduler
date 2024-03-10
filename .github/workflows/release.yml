@@ -3,7 +3,6 @@ run-name: ${{ github.actor }}
 on: [ push ]
 env:
   REGISTRY: registry.gitlab.com/ronen48/ciy
-  GOPATH: "."
 jobs:
   build-docker-image-and-push:
     runs-on: [self-hosted, linux]
@@ -18,6 +17,8 @@ jobs:
           username: ronen
           password: glpat-MUekjoxQDubT9QoHyuEx
       - name: Run build
+        env:
+          GOPATH: ${{ github.workspace }}
         run: chmod +x ./hack/build-images.sh && make local-image
 
       - name: Push docker image
