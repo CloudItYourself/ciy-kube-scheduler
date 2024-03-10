@@ -76,7 +76,7 @@ func getKubernetesClient() (*kubernetes.Clientset, *versioned.Clientset) {
 		panic(err)
 	}
 	if metrics_err != nil {
-		panic(err)
+		panic(metrics_err)
 	}
 	return clientset, metricsClient
 
