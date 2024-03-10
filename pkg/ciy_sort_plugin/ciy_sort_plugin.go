@@ -25,22 +25,26 @@ const (
 	responseTimeoutInSecond      = 2
 	ciyWeight                    = 0.6
 	metricsWeight                = 0.4
-	clusterNodeSurvivalApiPath   = "/api/v1/node_survival_chance/%s/%d"
-	clusterAbruptShutdownApiPath = "/api/v1/abrupt_disconnects/%s"
+	clusterNodeSurvivalApiPath   = "%s/api/v1/node_survival_chance/%s/%d"
+	clusterAbruptShutdownApiPath = "%s/api/v1/abrupt_disconnects/%s"
 )
 
 type CiySortPlugin struct {
-	kubeClient     *kubernetes.Clientset
-	metricsClient  *versioned.Clientset
-	currentNodeMap map[string]v1.Node
+	clusterAccessURL string
+	kubeClient       *kubernetes.Clientset
+	metricsClient    *versioned.Clientset
+	currentNodeMap   map[string]v1.Node
 }
 
 func NewCiySortPlugin() *CiySortPlugin {
 	kubeClient, metricsClient := getKubernetesClient()
+	clusterAccessURL := os.Getenv("CLUSTER_ACCESS_URL")
+
 	return &CiySortPlugin{
-		kubeClient:     kubeClient,
-		currentNodeMap: getNodeList(kubeClient),
-		metricsClient:  metricsClient,
+		kubeClient:       kubeClient,
+		currentNodeMap:   getNodeList(kubeClient),
+		metricsClient:    metricsClient,
+		clusterAccessURL: clusterAccessURL,
 	}
 }
 
@@ -125,7 +129,7 @@ func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNo
 	if isNodePersistent {
 		return 50.0, nil // return median score
 	}
-	abruptionResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(clusterAbruptShutdownApiPath, nodeName))
+	abruptionResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(ciy.clusterAccessURL, clusterAbruptShutdownApiPath, nodeName))
 	if err != nil {
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
@@ -135,7 +139,7 @@ func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNo
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
 
-	nodeSurvivalChanceResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(clusterNodeSurvivalApiPath, nodeName, clusterNodeDurationInMinutes))
+	nodeSurvivalChanceResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(ciy.clusterAccessURL, clusterNodeSurvivalApiPath, nodeName, clusterNodeDurationInMinutes))
 	if err != nil {
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
@@ -147,8 +151,8 @@ func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNo
 }
 
 func (ciy *CiySortPlugin) getMetricsServerScore(ctx context.Context, nodeName string) (float64, *framework.Status) {
-	nodeDetails, err := ciy.kubeClient.CoreV1().Nodes().Get(context.Background(), nodeName, metav1.GetOptions{})
-	nodeMetrics, metrics_err := ciy.metricsClient.MetricsV1beta1().NodeMetricses().Get(context.Background(), nodeName, metav1.GetOptions{})
+	nodeDetails, err := ciy.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, metav1.GetOptions{})
+	nodeMetrics, metrics_err := ciy.metricsClient.MetricsV1beta1().NodeMetricses().Get(ctx, nodeName, metav1.GetOptions{})
 	if err != nil || metrics_err != nil {
 		fmt.Printf("Error fetching metrics for node %s: %v\n", nodeName, err)
 		return 50.0, nil
