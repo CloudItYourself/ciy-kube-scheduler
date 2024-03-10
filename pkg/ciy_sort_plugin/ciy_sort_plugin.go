@@ -11,8 +11,10 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
@@ -39,6 +41,13 @@ func NewCiySortPlugin() *CiySortPlugin {
 		currentNodeMap: getNodeList(kubeClient),
 		metricsClient:  metricsClient,
 	}
+}
+
+func (ciy *CiySortPlugin) Name() string {
+	return "CiySortPlugin"
+}
+func New(obj runtime.Object, h framework.Handle) (framework.Plugin, error) {
+	return NewCiySortPlugin(), nil
 }
 
 func getNodeList(kubeClient *kubernetes.Clientset) map[string]v1.Node {

@@ -1,4 +1,4 @@
-module ciy/kube-scheduler
+module github.com/CloudItYourself/ciy-kube-scheduler
 
 replace (
 	k8s.io/api => k8s.io/api v0.28.4
