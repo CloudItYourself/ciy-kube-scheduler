@@ -18,7 +18,7 @@ jobs:
           username: ronen
           password: glpat-MUekjoxQDubT9QoHyuEx
       - name: Run build
-        run: make local-image
+        run: chmod +x ./hack/build-images.sh && make local-image
 
       - name: Push docker image
         run: |
