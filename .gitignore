@@ -21,3 +21,4 @@ hack/tools/bin/*
 /pkg/mod/cache/*
 /pkg/mod/github.com/*
 /pkg/mod/
+undefined/

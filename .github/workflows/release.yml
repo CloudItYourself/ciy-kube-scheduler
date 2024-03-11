@@ -1,6 +1,10 @@
 name: Build base python docker images
 run-name: ${{ github.actor }}
-on: [ push ]
+on:
+  push:
+    tags:
+      - "*" # triggers only if push new tag version
+  workflow_dispatch:
 env:
   REGISTRY: registry.gitlab.com/ronen48/ciy
 jobs:
