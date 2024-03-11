@@ -1,7 +1,6 @@
 ---
 before:
   hooks:
-    - go mod tidy -compat=1.20
     - go mod vendor
 
 release:
