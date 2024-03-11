@@ -127,7 +127,7 @@ func (ciy *CiySortPlugin) isNodePersistent(nodeName string) (bool, error) {
 
 func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNodePersistent bool) (float64, *framework.Status) {
 	if isNodePersistent {
-		return 50.0, nil // return median score
+		return 0.5, nil // return median score
 	}
 	abruptionResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(clusterAbruptShutdownApiPath, ciy.clusterAccessURL, nodeName))
 	if err != nil {
@@ -155,7 +155,7 @@ func (ciy *CiySortPlugin) getMetricsServerScore(ctx context.Context, nodeName st
 	nodeMetrics, metrics_err := ciy.metricsClient.MetricsV1beta1().NodeMetricses().Get(ctx, nodeName, metav1.GetOptions{})
 	if err != nil || metrics_err != nil {
 		fmt.Printf("Error fetching metrics for node %s: %v\n", nodeName, err)
-		return 50.0, nil
+		return 0.5, nil
 	}
 	allocatableCPU := nodeDetails.Status.Allocatable["cpu"]
 	allocatableCPUMilliCores := allocatableCPU.MilliValue()
@@ -193,7 +193,7 @@ func (ciy *CiySortPlugin) Score(ctx context.Context, state *framework.CycleState
 	}
 	metricsScore, _ := ciy.getMetricsServerScore(ctx, nodeName)
 
-	return int64((ciyScore*ciyWeight + metricsScore*metricsWeight) * 100), nil
+	return int64((ciyScore*ciyWeight + metricsScore*metricsWeight) * 100.0), nil
 }
 
 func (ciy *CiySortPlugin) ScoreExtensions() framework.ScoreExtensions {
