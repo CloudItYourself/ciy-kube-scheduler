@@ -23,13 +23,6 @@ archives:
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format: binary
 
-source:
-  enabled: true
-  name_template: "{{ .ProjectName }}_{{ .Version }}"
-  format: tar.gz
-  files:
-    - "vendor/"
-
 nfpms:
   # Configure nFPM for .deb and .rpm releases
   #
@@ -51,9 +44,9 @@ nfpms:
     formats:
       - deb
     contents:
-      - src: ./docs/packaging/ciy-scheduler.systemd.service
+      - src: ./packaging/ciy-scheduler.systemd.service
         dst: /usr/lib/systemd/system/ciy-scheduler.service
-      - src: ./docs/packaging/ciy-scheduling-config.yaml
+      - src: ./packaging/ciy-scheduling-config.yaml
         dst: /etc/ciy-scheduling/ciy-scheduling-config.yaml
         type: config
       - dst: /var/lib/ciy-scheduler
@@ -61,8 +54,8 @@ nfpms:
       - dst: /var/run/ciy-scheduler
         type: dir
     scripts:
-      postinstall: ./docs/packaging/postinstall.sh
-      postremove: ./docs/packaging/postremove.sh
+      postinstall: ./packaging/postinstall.sh
+      postremove: ./packaging/postremove.sh
 
 checksum:
   name_template: "checksums.txt"
