@@ -176,12 +176,14 @@ func (ciy *CiySortPlugin) getMetricsServerScore(ctx context.Context, nodeName st
 func (ciy *CiySortPlugin) Score(ctx context.Context, state *framework.CycleState, p *v1.Pod, nodeName string) (int64, *framework.Status) {
 	isNodePersistent, err := ciy.isNodePersistent(nodeName)
 	if err != nil {
+		fmt.Printf("Error fetching metrics for node %s: %v, score is 0\n", nodeName, err)
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
 
 	if (p.ObjectMeta.Namespace == "kube-system" || p.ObjectMeta.Namespace == "cloud-iy") && p.ObjectMeta.OwnerReferences[0].Kind != "DaemonSet" {
 		if isNodePersistent {
 			metricsScore, _ := ciy.getMetricsServerScore(ctx, nodeName)
+			fmt.Printf("Score for %s is %d\n", nodeName, int64(metricsScore*100.0))
 			return int64(metricsScore * 100.0), nil
 		} else {
 			return 0, nil
@@ -189,10 +191,11 @@ func (ciy *CiySortPlugin) Score(ctx context.Context, state *framework.CycleState
 	}
 	ciyScore, ciyErr := ciy.getCiyScore(ctx, nodeName, isNodePersistent)
 	if ciyErr != nil {
+		fmt.Printf("Error fetching ciy score for node %s: %v, score is 0\n", nodeName, err)
 		return 0, ciyErr
 	}
 	metricsScore, _ := ciy.getMetricsServerScore(ctx, nodeName)
-
+	fmt.Printf("Node: %s, ciy-score: %f, metrics-score: %f, total-score: %d\n", nodeName, ciyScore, metricsScore, int64((ciyScore*ciyWeight+metricsScore*metricsWeight)*100.0))
 	return int64((ciyScore*ciyWeight + metricsScore*metricsWeight) * 100.0), nil
 }
 
