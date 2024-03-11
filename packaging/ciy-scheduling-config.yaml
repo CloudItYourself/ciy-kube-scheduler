@@ -1,5 +1,7 @@
-apiVersion: kubescheduler.config.k8s.io/v1beta1
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
+clientConnection:
+  kubeconfig: "/etc/rancher/k3s/k3s.yaml"
 profiles:
 - schedulerName: default-scheduler
   plugins:
