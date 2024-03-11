@@ -1,0 +1,81 @@
+---
+before:
+  hooks:
+    - go mod tidy -compat=1.20
+    - go mod vendor
+
+release:
+  prerelease: auto
+
+builds:
+  - id: ciy-scheduler
+    binary: ciy-scheduler
+    main: ./cmd/scheduler/main.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - linux_amd64
+    flags:
+      - -mod=readonly
+    ldflags:
+      - -s -w -X k8s.io/component-base/version.gitVersion=v{{.Version}}
+    tags:
+      - ts2019
+
+archives:
+  - id: golang-cross
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    format: binary
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  format: tar.gz
+  files:
+    - "vendor/"
+
+nfpms:
+  # Configure nFPM for .deb and .rpm releases
+  #
+  # See https://nfpm.goreleaser.com/configuration/
+  # and https://goreleaser.com/customization/nfpm/
+  #
+  # Useful tools for debugging .debs:
+  # List file contents: dpkg -c dist/ciy-scheduler...deb
+  # Package metadata: dpkg --info dist/ciy-scheduler....deb
+  #
+  - builds:
+      - ciy-scheduler
+    package_name: ciy-scheduler
+    priority: optional
+    vendor: ciy-scheduler
+    maintainer: Ronen Voloshin
+    homepage: https://github.com/CloudItYourself/ciy-kube-scheduler
+    bindir: /usr/bin
+    formats:
+      - deb
+    contents:
+      - src: ./docs/packaging/ciy-scheduler.systemd.service
+        dst: /usr/lib/systemd/system/ciy-scheduler.service
+      - src: ./docs/packaging/ciy-scheduling-config.yaml
+        dst: /etc/ciy-scheduling/ciy-scheduling-config.yaml
+        type: config
+      - dst: /var/lib/ciy-scheduler
+        type: dir
+      - dst: /var/run/ciy-scheduler
+        type: dir
+    scripts:
+      postinstall: ./docs/packaging/postinstall.sh
+      postremove: ./docs/packaging/postremove.sh
+
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

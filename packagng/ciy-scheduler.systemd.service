@@ -1,0 +1,49 @@
+[Unit]
+After=syslog.target
+After=network.target
+Description=ciy-scheduler coordination server for Tailscale
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ciy-scheduler --kubeconfig /etc/rancher/k3s/k3s.yaml --config /etc/ciy-scheduling/ciy-scheduling-config.yaml
+Restart=always
+RestartSec=2
+EnvironmentFile=/etc/ciy-scheduling/env.cfg
+
+WorkingDirectory=/var/lib/ciy-scheduler
+ReadWritePaths=/var/lib/ciy-scheduler /var/run
+
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_CHOWN
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_CHOWN
+LockPersonality=true
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateMounts=true
+PrivateTmp=true
+ProcSubset=pid
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectProc=invisible
+ProtectSystem=strict
+RemoveIPC=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RuntimeDirectory=ciy-scheduler
+RuntimeDirectoryMode=0750
+StateDirectory=ciy-scheduler
+StateDirectoryMode=0750
+SystemCallArchitectures=native
+SystemCallFilter=@chown
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

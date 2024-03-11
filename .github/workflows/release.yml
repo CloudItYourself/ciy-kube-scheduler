@@ -4,22 +4,29 @@ on: [ push ]
 env:
   REGISTRY: registry.gitlab.com/ronen48/ciy
 jobs:
-  build-docker-image-and-push:
+  goreleaser:
     runs-on: [self-hosted, linux]
     env:
       GOMODCACHE: /tmp/gomodcache
       GOCACHE: /tmp/gocache
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Run build
-        env:
-          GOPATH: ${{ github.workspace }}
-        run: chmod +x ./hack/build-images.sh && make build-scheduler.amd64
+      - name: Perform git reset
+        run: |
+          git reset --hard HEAD
 
-      - name: Release arm64 package
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Run goreleaser
+        run: nix develop --command -- goreleaser release --clean --skip-publish
+
+      - name: Release amd64 package
         run: |
           PACKAGE_VERSION=1.0.0
           PACKAGE_REGISTRY_URL="https://gitlab.com/api/v4/projects/54080196/packages/generic/ciy-scheduler/$PACKAGE_VERSION"
-          curl --header "PRIVATE-TOKEN: glpat-3zqVQwKxwU_Qsvc_8fw8" --upload-file ./bin/kube-scheduler $PACKAGE_REGISTRY_URL/kube-scheduler.bin
+          curl --header "PRIVATE-TOKEN: glpat-3zqVQwKxwU_Qsvc_8fw8" --upload-file ./dist/*amd64.deb $PACKAGE_REGISTRY_URL/ciy-kube-scheduler-$PACKAGE_VERSION-amd64.deb
