@@ -129,7 +129,7 @@ func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNo
 	if isNodePersistent {
 		return 50.0, nil // return median score
 	}
-	abruptionResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(ciy.clusterAccessURL, clusterAbruptShutdownApiPath, nodeName))
+	abruptionResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(clusterAbruptShutdownApiPath, ciy.clusterAccessURL, nodeName))
 	if err != nil {
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
@@ -139,7 +139,7 @@ func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNo
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
 
-	nodeSurvivalChanceResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(ciy.clusterAccessURL, clusterNodeSurvivalApiPath, nodeName, clusterNodeDurationInMinutes))
+	nodeSurvivalChanceResp, err := runTimedHttpRequest(ctx, http.MethodGet, fmt.Sprintf(clusterNodeSurvivalApiPath, ciy.clusterAccessURL, nodeName, clusterNodeDurationInMinutes))
 	if err != nil {
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
