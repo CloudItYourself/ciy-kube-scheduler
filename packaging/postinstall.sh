@@ -16,7 +16,7 @@ ensure_sudo() {
 	fi
 }
 
-ensure_ciy-scheduler_path() {
+ensure_ciy_scheduler_path() {
 	if [ ! -f "$CIY_SCHEDULER_EXE" ]; then
 		echo "ciy-scheduler not in default path, exiting..."
 		exit 1
@@ -52,7 +52,7 @@ summary() {
 #
 {
 	ensure_sudo
-	ensure_ciy-scheduler_path
+	ensure_ciy_scheduler_path
 	create_run_dir
 	summary
 }
