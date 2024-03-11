@@ -22,6 +22,9 @@ import (
 	"k8s.io/component-base/cli"
 	"k8s.io/kubernetes/cmd/kube-scheduler/app"
 	ciySort "sigs.k8s.io/scheduler-plugins/pkg/ciy_sort_plugin"
+
+	// Ensure scheme package is initialized.
+	_ "sigs.k8s.io/scheduler-plugins/apis/config/scheme"
 )
 
 func main() {

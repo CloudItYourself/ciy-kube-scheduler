@@ -1,7 +1,7 @@
 [Unit]
 After=syslog.target
 After=network.target
-Description=ciy-scheduler coordination server for Tailscale
+Description=ciy-scheduler for kubernetes
 
 [Service]
 Type=simple
