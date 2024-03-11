@@ -1,8 +1,4 @@
 ---
-before:
-  hooks:
-    - go mod vendor
-
 release:
   prerelease: auto
 
