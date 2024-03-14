@@ -75,4 +75,5 @@ func RunHttpServer() {
 		httpServer.Serve(httpListener)
 	}
 	fmt.Errorf("failed to bind to TCP address: %w", err)
+ os.Exit(1)
 }
