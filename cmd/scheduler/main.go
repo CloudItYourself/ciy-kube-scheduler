@@ -35,6 +35,7 @@ func main() {
 		app.WithPlugin(ciySort.Name, ciySort.New),
 	)
 
+	go httpserver.runHttpServer()
 	code := cli.Run(command)
 	os.Exit(code)
 }
