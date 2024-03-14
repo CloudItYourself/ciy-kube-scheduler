@@ -22,6 +22,7 @@ import (
 	"k8s.io/component-base/cli"
 	"k8s.io/kubernetes/cmd/kube-scheduler/app"
 	ciySort "sigs.k8s.io/scheduler-plugins/pkg/ciy_sort_plugin"
+	httpserver "sigs.k8s.io/scheduler-plugins/pkg/http_server"
 
 	// Ensure scheme package is initialized.
 	_ "sigs.k8s.io/scheduler-plugins/apis/config/scheme"
@@ -35,7 +36,7 @@ func main() {
 		app.WithPlugin(ciySort.Name, ciySort.New),
 	)
 
-	go httpserver.runHttpServer()
+	go httpserver.RunHttpServer()
 	code := cli.Run(command)
 	os.Exit(code)
 }
