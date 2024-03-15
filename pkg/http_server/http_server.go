@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	mux "github.com/gorilla/mux"
@@ -32,11 +33,11 @@ func (ciyHttp *CiyHttpServer) getNodeScore(w http.ResponseWriter, r *http.Reques
 	ret, frameworkError := ciyHttp.ciySortPlugin.GetCiyScore(ciyHttp.ctx, vars["nodeName"], isNodePersistent)
 	if frameworkError != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Printf("Error getting metrics for: %w\n", frameworkError.AsError())
+		fmt.Printf("Error getting metrics for: %s\n", frameworkError.AsError().Error())
 		w.Write([]byte("0"))
 	} else {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(string(int64(ret * 100))))
+		w.Write([]byte(strconv.Itoa(int(ret * 100))))
 	}
 }
 
