@@ -2,8 +2,8 @@ package httpserver
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -24,14 +24,19 @@ type CiyHttpServer struct {
 
 func (ciyHttp *CiyHttpServer) getNodeScore(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	ret, err := ciyHttp.ciySortPlugin.Score(ciyHttp.ctx, nil, nil, vars["nodeName"])
+	isNodePersistent, err := ciyHttp.ciySortPlugin.IsNodePersistent(vars["nodeName"])
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("50"))
+	}
+	ret, frameworkError := ciyHttp.ciySortPlugin.GetCiyScore(ciyHttp.ctx, vars["nodeName"], isNodePersistent)
+	if frameworkError != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Printf("Error getting metrics for: %w\n", err)
+		fmt.Printf("Error getting metrics for: %w\n", frameworkError.AsError())
 		w.Write([]byte("0"))
 	} else {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(string(ret)))
+		w.Write([]byte(string(int64(ret * 100))))
 	}
 }
 
@@ -51,29 +56,16 @@ func RunHttpServer() {
 		// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/#aboutstreaming
 		WriteTimeout: 0,
 	}
-	tlsCertPath := os.Getenv("SCHEDULER_CERT_PATH")
-	tlsKeyath := os.Getenv("SCHEDULER_KEY_PATH")
-
-	certProvider := CertReloader{CertFile: tlsCertPath,
-		KeyFile:           tlsKeyath,
-		CachedCert:        nil,
-		CachedCertModTime: time.Now(),
-		CachedKeyModTime:  time.Now()}
 
 	var httpListener net.Listener
-	tlsConfig := &tls.Config{
-		NextProtos:     []string{"http/1.1"},
-		GetCertificate: certProvider.GetCertificate,
-		MinVersion:     tls.VersionTLS12,
-	}
 
 	var err error
-	httpServer.TLSConfig = tlsConfig
-	httpListener, err = tls.Listen("tcp", addr, tlsConfig)
+	httpListener, err = net.Listen("tcp", addr)
 
 	if err == nil {
 		httpServer.Serve(httpListener)
+		log.Fatalf("Httpserver stopped serving")
+	} else {
+		log.Fatalf("failed to bind to TCP address:: %s", err.Error())
 	}
-	fmt.Errorf("failed to bind to TCP address: %w", err)
- os.Exit(1)
 }

@@ -111,7 +111,7 @@ func runTimedHttpRequest(ctx context.Context, method string, url string) (string
 	return string(respBody), nil
 }
 
-func (ciy *CiySortPlugin) isNodePersistent(nodeName string) (bool, error) {
+func (ciy *CiySortPlugin) IsNodePersistent(nodeName string) (bool, error) {
 	nodeValue, ok := ciy.currentNodeMap[nodeName]
 	if !ok {
 		ciy.currentNodeMap = getNodeList(ciy.kubeClient)
@@ -125,7 +125,7 @@ func (ciy *CiySortPlugin) isNodePersistent(nodeName string) (bool, error) {
 
 }
 
-func (ciy *CiySortPlugin) getCiyScore(ctx context.Context, nodeName string, isNodePersistent bool) (float64, *framework.Status) {
+func (ciy *CiySortPlugin) GetCiyScore(ctx context.Context, nodeName string, isNodePersistent bool) (float64, *framework.Status) {
 	if isNodePersistent {
 		return 0.5, nil // return median score
 	}
@@ -174,7 +174,7 @@ func (ciy *CiySortPlugin) getMetricsServerScore(ctx context.Context, nodeName st
 }
 
 func (ciy *CiySortPlugin) Score(ctx context.Context, state *framework.CycleState, p *v1.Pod, nodeName string) (int64, *framework.Status) {
-	isNodePersistent, err := ciy.isNodePersistent(nodeName)
+	isNodePersistent, err := ciy.IsNodePersistent(nodeName)
 	if err != nil {
 		fmt.Printf("Error fetching metrics for node %s: %v, score is 0\n", nodeName, err)
 		return 0, framework.NewStatus(framework.Error, err.Error())
@@ -189,7 +189,7 @@ func (ciy *CiySortPlugin) Score(ctx context.Context, state *framework.CycleState
 			return 0, nil
 		}
 	}
-	ciyScore, ciyErr := ciy.getCiyScore(ctx, nodeName, isNodePersistent)
+	ciyScore, ciyErr := ciy.GetCiyScore(ctx, nodeName, isNodePersistent)
 	if ciyErr != nil {
 		fmt.Printf("Error fetching ciy score for node %s: %v, score is 0\n", nodeName, err)
 		return 0, ciyErr
